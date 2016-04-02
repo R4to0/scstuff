@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# install_opfor_support.sh - Revision 2 WIP (Apr 02 2016 06:33PM UTC-3:00) by Rafael "R4to0" Maciel.
+# install_opfor_support.sh - Revision 2 (Apr 02 2016 06:33PM UTC-3:00) by Rafael "R4to0" Maciel.
 # Under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License 
 # CC BY-NC-SA 4.0 - http://creativecommons.org/licenses/by-nc-sa/4.0/
 
-# Updates: <link here>
+# Updates: https://gist.githubusercontent.com/R4to0/314d18e8b4cd2c107d9b0f029dbedf90/raw/install_opfor_support.sh
 # Tested on Ubuntu 14.04 and Debian 8 Jessie
 #
 
