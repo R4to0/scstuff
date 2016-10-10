@@ -1,61 +1,101 @@
 #!/bin/bash
 
-# install_bshift_support.sh - Revision 10 (Nov 11 2015 07:55 UTC-2:00)
+# install_bshift_support.sh - Revision 11 WIP (Jan 27 2016 19:02 UTC-2:00)
 # Updates: https://gist.githubusercontent.com/R4to0/59433ea738d9630dfbd1/raw/install_bshift_support.sh
+# Tested on Ubuntu 14.04 and Debian 8 Jessie
+#
+# What's new?
+# - Added svencoop_addon support
+# - Now using the new BShiftBSPConverter
+# - Silent output option
 
-# A Blue-Shift installation support script for Sven Co-op 5.0
-#
-#
-# Revision 10:
-#
-# -Optimized script a bit
-# -Silenced some patching optput
-#
-#
-# Planned for next update:
-#
-# -verbose/silent switch
-# -more checking
+#for future use, leave false
+steamdl=false
+
+# install support for svencoop_addon folder, false disables it
+scaddon=false
+
+# Enable/disable status output
+statusout=true
+
+# Don´t change anything below this line unless you know what are doing!!
+
 
 # clear screen
 clear
-
-# a cool terminal title
-PROMPT_COMMAND='echo -ne "\033]0;${USER}@{HOSTNAME}: Sven Co-op 5.0 Blue Shift Installer\007"'
 
 # greetings message
 echo ""
 echo "-= Valve Blue Shift map support for Sven Co-op 5.0 =-"
 echo ""
 echo "Warning: around 55MB is used after installation."
-echo "Installation may take a few seconds depending on"
-echo "your system specs. Please be patient."
+
+if [ "$steamdl" == true ]
+then
+	echo "An additional of xxxMB are temporarily used for"
+	echo "download process and cleared after finishes."
+fi
+
+
+echo ""
+echo "Installation may take a few minutes depending on"
+echo "your system and internet speed. Please be patient."
 echo ""
 echo ""
 
-# It's time to choose! - GMan (From Half-Life of course!)
-echo "Press CTRL+C to cancel or please wait..."
+# It's time to choose! - GMan
+echo "Press CTRL+C to cancel or wait for 5 seconds..."
 sleep 5
 clear
 
-#set default path for maps
-mpath="maps"
-
-#set maplist
-maplist="ba_canal1.bsp ba_canal1b.bsp ba_canal2.bsp ba_canal3.bsp ba_elevator.bsp ba_maint.bsp ba_outro.bsp ba_power1.bsp ba_power2.bsp ba_security1.bsp ba_security2.bsp ba_teleport1.bsp ba_teleport2.bsp ba_tram1.bsp ba_tram2.bsp ba_tram3.bsp ba_xen1.bsp ba_xen2.bsp ba_xen3.bsp ba_xen4.bsp ba_xen5.bsp ba_xen6.bsp ba_yard1.bsp ba_yard2.bsp ba_yard3.bsp ba_yard3a.bsp ba_yard3b.bsp ba_yard4.bsp ba_yard4a.bsp ba_yard5.bsp ba_yard5a.bsp"
-
-#  the bit bucket aka NULL
+# the bit bucket aka NULL
 null=/dev/null
+
+# future use
+if [ "$steamdl" == true ]
+then
+	# temp dir for downloading
+	bstmpdir=/tmp/bshift
+
+	# appid
+	id=130
+fi
+
+# set path for maps
+if [ "$scaddon" == true ]
+then
+	# addon folder
+	mpath="../svencoop_addon/maps"
+else
+	# default
+	mpath="maps"
+fi
+
+# set maplist
+maplist="ba_canal1 ba_canal1b ba_canal2 ba_canal3 ba_elevator ba_maint ba_outro ba_power1 ba_power2 ba_security1 ba_security2 ba_teleport1 ba_teleport2 ba_tram1 ba_tram2 ba_tram3 ba_xen1 ba_xen2 ba_xen3 ba_xen4 ba_xen5 ba_xen6 ba_yard1 ba_yard2 ba_yard3 ba_yard3a ba_yard3b ba_yard4 ba_yard4a ba_yard5 ba_yard5a"
 
 # dependencies
 deps(){
-	command -v unzip >$null 2>&1  || { 
+	command -v unzip >/dev/null 2>&1  || { 
 			echo "Unzip not found."
-			echo "You can install using 'apt-get install unzip"
+			echo "You can install by using 'sudo apt-get install unzip"
 			echo "on Ubuntu and Debian, and 'yum install unzip'"
 			echo "on Redhat or CentOS."
 			exit 1
 	}
+	
+	#don't know how to do on same func
+	if [ ! -f "BShiftBSPConverter" ]
+	then
+		echo "Missing BShiftBSPConverter, please reinstall SvenDS."
+		exit 1
+	fi
+
+	if [ ! -f "ripent" ]
+	then
+		echo "Missing ripent, please reinstall SvenDS."
+		exit 1
+	fi
 }
 
 # let's see if all files are where we want
@@ -63,15 +103,18 @@ mchk(){
 	for check in $maplist; do
 
 		# try every map in the list
-		if [ -f "$mpath/$check" ]
+		if [ -f "$mpath/$check.bsp" ]
 		then
 			# Found it? Cool!
-			echo "Found $check"
+			if [ "$statusout" == true ]
+			then
+				echo "Found $check"
+			fi
 		else
 			# Show missing message to user and exit script.
 			echo ""
-			echo "Oops! Map file $check is missing. Please check if you"
-			echo "have all Blue Shift maps in svencoop/maps folder!"
+			echo "Oops! Map file $check.bsp is missing. Please check if you"
+			echo "have all Blue Shift map files in maps folder!"
 			echo ""
 			exit 1
 		fi
@@ -79,31 +122,27 @@ mchk(){
 	echo ""
 }
 
-# the hard part: swap few hex bytes in each map
-hexpatch(){
-	# set tmp files for hex values (for now)
-	hex1=/tmp/hex1.tmp
-	hex2=/tmp/hex2.tmp
-	
+# convert/byte swapping
+bsppatch(){
 	# loop for patching
 	for mpatch in $maplist; do
 
-		# dump two bytes group (0x4 to 0xA and 0xC to 0x12) in hex and save to a temp file
-		# xxd and dd are both system standard tools, no installation required
-		xxd -u -s 4 -l 7 $mpath/$mpatch | xxd -r > $hex1
-		xxd -u -s 12 -l 7 $mpath/$mpatch | xxd -r > $hex2
-	
-		# write values, hex1 to hex2 and hex 2 to hex1
-		echo "Patching $mpatch..."
-		dd if=$hex1 of=$mpath/$mpatch skip=4 count=7 bs=1 seek=12 conv=notrunc >$null 2>&1
-		dd if=$hex2 of=$mpath/$mpatch skip=12 count=7 bs=1 seek=4 conv=notrunc >$null 2>&1
+		# converting
+		./BShiftBSPConverter "$mpath/$mpatch".bsp >$null
+		if [ "$statusout" == true ]
+		then
+			echo "Converting $mpatch..."
+		fi
 	done
 	echo ""
 }
 
 #unzip blue shift support files into maps folder
 unzips(){
-	echo "Unzipping support files..."
+	if [ "$statusout" == true ]
+	then
+		echo "Unzipping support files..."
+	fi
 	unzip -o bshift_support.sven -d $mpath >$null
 	echo ""
 }
@@ -111,37 +150,45 @@ unzips(){
 # *.ent patching section
 entpatch(){
 	# ripent binary
-	ripent="./ripent-linux-m32 -import"
+	ripent="./ripent -import"
 	
 	# patching loop
 	for ent in $maplist; do
-		echo "Patching entities on $ent..."
-		$ripent -import $mpath/$ent >$null
+		if [ "$statusout" == true ]
+		then
+			echo "Patching $ent..."
+		fi
+		$ripent -import "$mpath/$ent".bsp >$null
 	done
 	echo ""
 }
 
 # clean all the remaining mess :)
 cleanup(){
-	echo "Cleaning up..."
+	if [ "$statusout" == true ]
+	then
+		echo "Cleaning up..."
+	fi
 	rm $mpath/ba_*.ent
-	rm $hex1
-	rm $hex2
-	rm $mpath/bshift_bsp_convert.exe
 	echo ""
 }
 
 # Time to call the functions!
 deps
 mchk
-hexpatch
+bsppatch
 unzips
 entpatch
 cleanup
 
 # We made it Mr Calhoun, we made it!
-echo "All done! If you see a bunch of errors please"
-echo "contact us at http://forums.svencoop.com"
+if [ "$statusout" == true ]
+then
+	echo "All done! If you see a bunch of errors please"
+	echo "contact us at http://forums.svencoop.com"
+else
+	echo "Done!"
+fi
 
 exit 0
 
