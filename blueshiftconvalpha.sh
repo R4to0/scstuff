@@ -11,7 +11,8 @@ echo ""
 echo "-= Valve Blue Shift map support for Sven Co-op 5.0 =-"
 echo ""
 echo "This is a unfinished work in progress bash script"
-echo "for testing propurses only. Use at your own risk"
+echo "for testing propurses only. Use at your own risk."
+echo ""
 echo ""
 echo ""
 
@@ -24,11 +25,10 @@ clear
 mpath="maps"
 
 #set maplist
-#maplist="ba_canal1.bsp ba_canal1b.bsp ba_canal2.bsp ba_canal3.bsp ba_elevator.bsp ba_maint.bsp ba_outro.bsp ba_power1.bsp ba_power2.bsp ba_security1.bsp ba_security2.bsp ba_teleport1.bsp ba_teleport2.bsp ba_tram1.bsp ba_tram2.bsp ba_tram3.bsp ba_xen1.bsp ba_xen2.bsp ba_xen3.bsp ba_xen4.bsp ba_xen5.bsp ba_xen6.bsp ba_yard1.bsp ba_yard2.bsp ba_yard3.bsp ba_yard3a.bsp ba_yard3b.bsp ba_yard4.bsp ba_yard4a.bsp ba_yard5.bsp ba_yard5a.bsp"
-maplist="ba_canal1.bsp ba_canal1b.bsp" # temp/test
+maplist="ba_canal1.bsp ba_canal1b.bsp ba_canal2.bsp ba_canal3.bsp ba_elevator.bsp ba_maint.bsp ba_outro.bsp ba_power1.bsp ba_power2.bsp ba_security1.bsp ba_security2.bsp ba_teleport1.bsp ba_teleport2.bsp ba_tram1.bsp ba_tram2.bsp ba_tram3.bsp ba_xen1.bsp ba_xen2.bsp ba_xen3.bsp ba_xen4.bsp ba_xen5.bsp ba_xen6.bsp ba_yard1.bsp ba_yard2.bsp ba_yard3.bsp ba_yard3a.bsp ba_yard3b.bsp ba_yard4.bsp ba_yard4a.bsp ba_yard5.bsp ba_yard5a.bsp"
 
 # dependencies
-function deps(){
+deps(){
 	command -v unzip >/dev/null 2>&1  || { 
 			echo "Unzip not found."
 			echo "You can install using 'apt-get install unzip"
@@ -39,7 +39,7 @@ function deps(){
 }
 
 # let's see if all files are where we want
-function mchk(){
+mchk(){
 	for check in $maplist; do
 
 		# try every map in the list
@@ -56,14 +56,15 @@ function mchk(){
 			exit 1
 		fi
 	done
+	echo ""
 }
 
 # the hard part: swap few hex bytes in each map
-function mpatch(){
+hexpatch(){
 	# set tmp files for hex values (for now)
 	hex1=/tmp/hex1.tmp
 	hex2=/tmp/hex2.tmp
-
+	
 	# loop for patching
 	for mpatch in $maplist; do
 
@@ -73,19 +74,21 @@ function mpatch(){
 	
 		# write values, hex1 to hex2 and hex 2 to hex1
 		echo "Patching $mpatch..."
-		dd if=$hex1 of=$mpath/$mpatch skip=4 count=7 bs=1 seek=12 conv=notrunc
-		dd if=$hex2 of=$mpath/$mpatch skip=12 count=7 bs=1 seek=4 conv=notrunc
+		dd if=$hex1 of=$mpath/$mpatch skip=4 count=7 bs=1 seek=12 conv=notrunc >/dev/null
+		dd if=$hex2 of=$mpath/$mpatch skip=12 count=7 bs=1 seek=4 conv=notrunc >/dev/null
 	done
+	echo ""
 }
 
 #unzip blue shift support files into maps folder
-function unzips(){
+unzips(){
 	echo "Unzipping support files..."
 	unzip -o bshift_support.sven -d $mpath > /dev/null
+	echo ""
 }
 
 # *.ent patching section
-function entpatch(){
+entpatch(){
 	# ripent binary
 	ripent="./ripent-linux-m32 -import"
 	
@@ -94,18 +97,23 @@ function entpatch(){
 		echo "Patching entities on $ent..."
 		$ripent -import $mpath/$ent > /dev/null
 	done
+	echo ""
 }
 
 # clean all the remaining mess :)
-function cleanup(){
+cleanup(){
+	echo "Cleaning up..."
 	rm $mpath/ba_*.ent
 	rm $hex1
 	rm $hex2
+	rm $mpath/bshift_bsp_convert.exe
+	echo ""
 }
 
 # Time to call the functions!
+deps
 mchk
-mpatch
+hexpatch
 unzips
 entpatch
 cleanup
