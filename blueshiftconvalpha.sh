@@ -118,7 +118,7 @@ unzips
 entpatch
 cleanup
 
-# We made it Mister Calhoun, we made it!
+# We made it Mr Calhoun, we made it!
 echo "All done!"
 
 exit 0
