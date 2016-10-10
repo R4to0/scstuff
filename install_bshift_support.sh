@@ -117,7 +117,7 @@ validation() {
 
 	if [ ! -f "$bsp" ]
 	then
-		echo "Missing $bsp, please reinstall SvenDS."
+		echo "Missing $bsp, cannot continue. Corrupted install?"
 		exit 1
 	fi
 
