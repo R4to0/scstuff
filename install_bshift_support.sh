@@ -1,194 +1,198 @@
 #!/bin/bash
 
-# install_bshift_support.sh - Revision 11 WIP (Jan 27 2016 19:02 UTC-2:00)
-# Updates: https://gist.githubusercontent.com/R4to0/59433ea738d9630dfbd1/raw/install_bshift_support.sh
+# install_bshift_support.sh for Sven Co-op 5.x
+# Last Update: Oct 10 2016 15:37 UTC-3:00 by Rafael "R4to0" Maciel.
+
 # Tested on Ubuntu 14.04 and Debian 8 Jessie
-#
-# What's new?
-# - Added svencoop_addon support
-# - Now using the new BShiftBSPConverter
-# - Silent output option
-
-#for future use, leave false
-steamdl=false
-
-# install support for svencoop_addon folder, false disables it
-scaddon=false
-
-# Enable/disable status output
-statusout=true
-
-# Don´t change anything below this line unless you know what are doing!!
 
 
-# clear screen
-clear
+init() {
 
-# greetings message
-echo ""
-echo "-= Valve Blue Shift map support for Sven Co-op 5.0 =-"
-echo ""
-echo "Warning: around 55MB is used after installation."
-
-if [ "$steamdl" == true ]
-then
-	echo "An additional of xxxMB are temporarily used for"
-	echo "download process and cleared after finishes."
-fi
+	# If you don't want to install into svencoop_addon folder,
+	# set to false (not recommended)
+	scaddon=true
 
 
-echo ""
-echo "Installation may take a few minutes depending on"
-echo "your system and internet speed. Please be patient."
-echo ""
-echo ""
+	# Don´t change anything below this line unless you know what are doing!!
 
-# It's time to choose! - GMan
-echo "Press CTRL+C to cancel or wait for 5 seconds..."
-sleep 5
-clear
+	# Game name
+	gamename="Blue Shift"
 
-# the bit bucket aka NULL
-null=/dev/null
+	# Get OS arch type
+	osarch=$(getconf LONG_BIT)
 
-# future use
-if [ "$steamdl" == true ]
-then
-	# temp dir for downloading
-	bstmpdir=/tmp/bshift
+	# Default ripent is 64-bit.
+	# We have to use the right binary otherwise patching will fail...
+	if [ "$osarch" == "64" ]
+	then
+		ripent=maps/ripent
+	else
+		ripent=maps/ripent_32
+	fi
 
-	# appid
-	id=130
-fi
+	# BS BSP Patcher binary
+	bsp=BShiftBSPConverter
 
-# set path for maps
-if [ "$scaddon" == true ]
-then
-	# addon folder
-	mpath="../svencoop_addon/maps"
-else
-	# default
-	mpath="maps"
-fi
+	# Destination path for maps
+	if [ "$scaddon" == true ]
+	then
+		# svencoop_addon folder
+		mpath="../svencoop_addon/maps"
+	else
+		# svencoop standard folder (not recommended)
+		mpath="maps"
+	fi
 
-# set maplist
-maplist="ba_canal1 ba_canal1b ba_canal2 ba_canal3 ba_elevator ba_maint ba_outro ba_power1 ba_power2 ba_security1 ba_security2 ba_teleport1 ba_teleport2 ba_tram1 ba_tram2 ba_tram3 ba_xen1 ba_xen2 ba_xen3 ba_xen4 ba_xen5 ba_xen6 ba_yard1 ba_yard2 ba_yard3 ba_yard3a ba_yard3b ba_yard4 ba_yard4a ba_yard5 ba_yard5a"
+	# Blue Shift installation path
+	bsdir="../../Half-Life/bshift"
 
-# dependencies
-deps(){
+	# map list
+	maplist="
+		ba_tram1 ba_tram2 ba_tram3 \
+		ba_security1 ba_security2 ba_maint ba_elevator \
+		ba_canal1 ba_canal1b ba_canal2 ba_canal3 \
+		ba_yard1 ba_yard2 ba_yard3 ba_yard3a ba_yard3b ba_yard4 ba_yard4a ba_yard5 ba_yard5a ba_teleport1 \
+		ba_xen1 ba_xen2 ba_xen3 ba_xen4 ba_xen5 ba_xen6 \
+		ba_power1 ba_power2 \
+		ba_teleport2 \
+		ba_outro"
+
+		# Chapter 1: Living Quarters Outbound
+		# Chapter 2: Insecurity
+		# Chapter 3: Duty Calls
+		# Chapter 4: Captive Freight
+		# Chapter 5: Focal Point
+		# Chapter 6: Power Struggle
+		# Chapter 7: A Leap Of Faith
+		# Chapter 8: Deliverance
+
+}
+
+messages () {
+
+	echo ""
+	echo "-= Valve $gamename map support for Sven Co-op =-"
+	echo ""
+	echo "Warning: around xxMB is used after installation."
+
+	echo ""
+	echo "Installation may take a few minutes depending on"
+	echo "your system performance. Please be patient."
+	echo ""
+	echo ""
+	
+	# It's time to choose! - GMan
+	for count in {5..1}; do echo -ne "Press CTRL+C to cancel or wait $count seconds..."'\r'; sleep 1; done; echo ""
+	clear
+
+	echo ""
+	echo "OS architecture: $osarch-bit"
+	echo "svencoop_addon support: $scaddon"
+	echo "ripent binary: $ripent"
+	echo ""
+	echo ""
+
+}
+
+validation() {
+
 	command -v unzip >/dev/null 2>&1  || { 
-			echo "Unzip not found."
-			echo "You can install by using 'sudo apt-get install unzip"
-			echo "on Ubuntu and Debian, and 'yum install unzip'"
-			echo "on Redhat or CentOS."
-			exit 1
+		echo "Unzip not found."
+		echo "You can install by using 'sudo apt-get install unzip"
+		echo "on Ubuntu and Debian, and 'yum install unzip'"
+		echo "on RedHat or CentOS."
+		exit 1
 	}
-	
-	#don't know how to do on same func
-	if [ ! -f "BShiftBSPConverter" ]
+
+	if [ ! -f "$ripent" ]
 	then
-		echo "Missing BShiftBSPConverter, please reinstall SvenDS."
+		echo "Missing $ripent, cannot continue. Corrupted install?"
 		exit 1
-	fi
-
-	if [ ! -f "ripent" ]
-	then
-		echo "Missing ripent, please reinstall SvenDS."
-		exit 1
-	fi
-}
-
-# let's see if all files are where we want
-mchk(){
-	for check in $maplist; do
-
-		# try every map in the list
-		if [ -f "$mpath/$check.bsp" ]
+	else
+		if [[ ! -x "$ripent" ]]
 		then
-			# Found it? Cool!
-			if [ "$statusout" == true ]
-			then
-				echo "Found $check"
-			fi
+			chmod +x $ripent
+		fi
+	fi
+
+	if [ ! -f "$bsp" ]
+	then
+		echo "Missing $bsp, please reinstall SvenDS."
+		exit 1
+	fi
+
+	# Check if Blue Shift game directory exists
+	if [ -d "$bsdir" ];
+	then
+		echo "Found $gamename installation."
+		copybs
+	fi
+
+	for mcheck in $maplist; do
+
+		# Extra check: let's make sure we have all map files before doing anything!
+		if [ -f "$mpath/$mcheck.bsp" ]
+		then
+			echo "Found $mcheck in maps folder!"
 		else
-			# Show missing message to user and exit script.
+			# Show message about missing file to user and exit script.
 			echo ""
-			echo "Oops! Map file $check.bsp is missing. Please check if you"
-			echo "have all Blue Shift map files in maps folder!"
+			echo "Oops! Map file $mcheck.bsp is missing. Please make sure you"
+			echo "have a working $gamename installation and/or"
+			echo "all map files in maps folder before running this script!"
 			echo ""
 			exit 1
 		fi
 	done
 	echo ""
+
 }
 
-# convert/byte swapping
-bsppatch(){
-	# loop for patching
-	for mpatch in $maplist; do
+# Copy map files from original installation
+copybs(){
 
-		# converting
-		./BShiftBSPConverter "$mpath/$mpatch".bsp >$null
-		if [ "$statusout" == true ]
-		then
-			echo "Converting $mpatch..."
-		fi
+	for copy in $maplist; do
+	echo "Copying $copy..."
+	cp "$bsdir/maps/$copy.bsp" "$mpath/$copy.bsp"
 	done
 	echo ""
+
 }
 
-#unzip blue shift support files into maps folder
-unzips(){
-	if [ "$statusout" == true ]
-	then
-		echo "Unzipping support files..."
-	fi
-	unzip -o bshift_support.sven -d $mpath >$null
-	echo ""
-}
+# Patching / importing custom entities
+patching() {
 
-# *.ent patching section
-entpatch(){
-	# ripent binary
-	ripent="./ripent -import"
-	
-	# patching loop
-	for ent in $maplist; do
-		if [ "$statusout" == true ]
-		then
-			echo "Patching $ent..."
-		fi
-		$ripent -import "$mpath/$ent".bsp >$null
+	echo "Unzipping support files..."
+	unzip -o bshift_support.sven -d $mpath >/dev/null 2>&1
+	for target in $maplist; do
+	echo "Patching $target..."
+	./$ripent -import "$mpath/$target".bsp >/dev/null 2>&1
+	./$bsp "$mpath/$target".bsp >/dev/null 2>&1
 	done
 	echo ""
+
 }
+
+
 
 # clean all the remaining mess :)
 cleanup(){
-	if [ "$statusout" == true ]
-	then
-		echo "Cleaning up..."
-	fi
+
+	echo "Cleaning up..."
 	rm $mpath/ba_*.ent
 	echo ""
 }
 
 # Time to call the functions!
-deps
-mchk
-bsppatch
-unzips
-entpatch
+init
+messages
+validation
+patching
 cleanup
 
 # We made it Mr Calhoun, we made it!
-if [ "$statusout" == true ]
-then
-	echo "All done! If you see a bunch of errors please"
-	echo "contact us at http://forums.svencoop.com"
-else
-	echo "Done!"
-fi
+echo "All done! If you have any problems, ask"
+echo "for help at http://forums.svencoop.com"
 
 exit 0
 
