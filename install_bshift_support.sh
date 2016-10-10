@@ -1,10 +1,21 @@
 #!/bin/bash
 
-# install_bshift_support.sh - Revision 9 (Nov 2 2015 04:28 UTC-2:00)
+# install_bshift_support.sh - Revision 10 (Nov 11 2015 07:55 UTC-2:00)
 # Updates: https://gist.githubusercontent.com/R4to0/59433ea738d9630dfbd1/raw/install_bshift_support.sh
 
 # A Blue-Shift installation support script for Sven Co-op 5.0
-# 
+#
+#
+# Revision 10:
+#
+# -Optimized script a bit
+# -Silenced some patching optput
+#
+#
+# Planned for next update:
+#
+# -verbose/silent switch
+# -more checking
 
 # clear screen
 clear
@@ -33,9 +44,12 @@ mpath="maps"
 #set maplist
 maplist="ba_canal1.bsp ba_canal1b.bsp ba_canal2.bsp ba_canal3.bsp ba_elevator.bsp ba_maint.bsp ba_outro.bsp ba_power1.bsp ba_power2.bsp ba_security1.bsp ba_security2.bsp ba_teleport1.bsp ba_teleport2.bsp ba_tram1.bsp ba_tram2.bsp ba_tram3.bsp ba_xen1.bsp ba_xen2.bsp ba_xen3.bsp ba_xen4.bsp ba_xen5.bsp ba_xen6.bsp ba_yard1.bsp ba_yard2.bsp ba_yard3.bsp ba_yard3a.bsp ba_yard3b.bsp ba_yard4.bsp ba_yard4a.bsp ba_yard5.bsp ba_yard5a.bsp"
 
+#  the bit bucket aka NULL
+null=/dev/null
+
 # dependencies
 deps(){
-	command -v unzip >/dev/null 2>&1  || { 
+	command -v unzip >$null 2>&1  || { 
 			echo "Unzip not found."
 			echo "You can install using 'apt-get install unzip"
 			echo "on Ubuntu and Debian, and 'yum install unzip'"
@@ -81,8 +95,8 @@ hexpatch(){
 	
 		# write values, hex1 to hex2 and hex 2 to hex1
 		echo "Patching $mpatch..."
-		dd if=$hex1 of=$mpath/$mpatch skip=4 count=7 bs=1 seek=12 conv=notrunc >/dev/null
-		dd if=$hex2 of=$mpath/$mpatch skip=12 count=7 bs=1 seek=4 conv=notrunc >/dev/null
+		dd if=$hex1 of=$mpath/$mpatch skip=4 count=7 bs=1 seek=12 conv=notrunc >$null 2>&1
+		dd if=$hex2 of=$mpath/$mpatch skip=12 count=7 bs=1 seek=4 conv=notrunc >$null 2>&1
 	done
 	echo ""
 }
@@ -90,7 +104,7 @@ hexpatch(){
 #unzip blue shift support files into maps folder
 unzips(){
 	echo "Unzipping support files..."
-	unzip -o bshift_support.sven -d $mpath > /dev/null
+	unzip -o bshift_support.sven -d $mpath >$null
 	echo ""
 }
 
@@ -102,7 +116,7 @@ entpatch(){
 	# patching loop
 	for ent in $maplist; do
 		echo "Patching entities on $ent..."
-		$ripent -import $mpath/$ent > /dev/null
+		$ripent -import $mpath/$ent >$null
 	done
 	echo ""
 }
