@@ -73,7 +73,7 @@ messages () {
 	echo ""
 	echo "-= Valve $gamename map support for Sven Co-op =-"
 	echo ""
-	echo "Warning: around xxMB is used after installation."
+	echo "Warning: around 50MB is used after installation."
 
 	echo ""
 	echo "Installation may take a few minutes depending on"
