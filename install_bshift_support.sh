@@ -1,7 +1,10 @@
 #!/bin/bash
 
-# install_bshift_support.sh - Revision 8
+# install_bshift_support.sh - Revision 9 (Nov 2 2015 04:28 UTC-2:00)
 # Updates: https://gist.githubusercontent.com/R4to0/59433ea738d9630dfbd1/raw/install_bshift_support.sh
+
+# A Blue-Shift installation support script for Sven Co-op 5.0
+# 
 
 # clear screen
 clear
@@ -13,14 +16,14 @@ PROMPT_COMMAND='echo -ne "\033]0;${USER}@{HOSTNAME}: Sven Co-op 5.0 Blue Shift I
 echo ""
 echo "-= Valve Blue Shift map support for Sven Co-op 5.0 =-"
 echo ""
-echo "This is a unfinished work in progress bash script"
-echo "for testing propurses only. Use at your own risk."
-echo ""
+echo "Warning: around 55MB is used after installation."
+echo "Installation may take a few seconds depending on"
+echo "your system specs. Please be patient."
 echo ""
 echo ""
 
 # It's time to choose! - GMan (From Half-Life of course!)
-echo "Press CTRL+C to cancel or wait for 5 seconds..."
+echo "Press CTRL+C to cancel or please wait..."
 sleep 5
 clear
 
@@ -71,7 +74,8 @@ hexpatch(){
 	# loop for patching
 	for mpatch in $maplist; do
 
-		#dump two bytes group (0x4 to 0xA and 0xC to 0x12) in hex and save to a temp file
+		# dump two bytes group (0x4 to 0xA and 0xC to 0x12) in hex and save to a temp file
+		# xxd and dd are both system standard tools, no installation required
 		xxd -u -s 4 -l 7 $mpath/$mpatch | xxd -r > $hex1
 		xxd -u -s 12 -l 7 $mpath/$mpatch | xxd -r > $hex2
 	
@@ -122,7 +126,8 @@ entpatch
 cleanup
 
 # We made it Mr Calhoun, we made it!
-echo "All done!"
+echo "All done! If you see a bunch of errors please"
+echo "contact us at http://forums.svencoop.com"
 
 exit 0
 
