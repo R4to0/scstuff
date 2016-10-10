@@ -39,7 +39,7 @@ function deps(){
 }
 
 # let's see if all files are where we want
-function chk(){
+function mchk(){
 	for check in $maplist; do
 
 		# try every map in the list
@@ -59,7 +59,7 @@ function chk(){
 }
 
 # the hard part: swap few hex bytes in each map
-function patch(){
+function mpatch(){
 	# set tmp files for hex values (for now)
 	hex1=/tmp/hex1.tmp
 	hex2=/tmp/hex2.tmp
@@ -79,21 +79,36 @@ function patch(){
 }
 
 #unzip blue shift support files into maps folder
-function unzip(){
+function unzips(){
 	echo "Unzipping support files..."
 	unzip -o bshift_support.sven -d $mpath > /dev/null
 }
 
-function ripent(){
+# *.ent patching section
+function entpatch(){
 	# ripent binary
 	ripent="./ripent-linux-m32 -import"
 	
 	# patching loop
 	for ent in $maplist; do
-		echo "Patching $ent..."
+		echo "Patching entities on $ent..."
 		$ripent -import $mpath/$ent > /dev/null
 	done
 }
+
+# clean all the remaining mess :)
+function cleanup(){
+	rm $mpath/ba_*.ent
+	rm $hex1
+	rm $hex2
+}
+
+# Time to call the functions!
+mchk
+mpatch
+unzips
+entpatch
+cleanup
 
 # We made it Mister Calhoun, we made it!
 echo "All done!"
