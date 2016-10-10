@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# install_bshift_support.sh - Revision 8
+# Updates: https://gist.githubusercontent.com/R4to0/59433ea738d9630dfbd1/raw/install_bshift_support.sh
+
 # clear screen
 clear
 
