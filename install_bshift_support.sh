@@ -1,17 +1,10 @@
 #!/bin/bash
 
-# install_bshift_support.sh for Sven Co-op 5.x
-# Last Update: Oct 10 2016 15:37 UTC-3:00 by Rafael "R4to0" Maciel.
-
-# Tested on Ubuntu 14.04 and Debian 8 Jessie
-
-
 init() {
 
 	# If you don't want to install into svencoop_addon folder,
-	# set to false (not recommended)
-	scaddon=true
-
+	# change this to 'svencoop' (NOT RECOMMENDED)
+	instdir=svencoop_addon
 
 	# Don´t change anything below this line unless you know what are doing!!
 
@@ -34,7 +27,7 @@ init() {
 	bsp=BShiftBSPConverter
 
 	# Destination path for maps
-	if [ "$scaddon" == true ]
+	if [ "$instdir" == svencoop_addon ]
 	then
 		# svencoop_addon folder
 		mpath="../svencoop_addon/maps"
@@ -73,7 +66,7 @@ messages () {
 	echo ""
 	echo "-= Valve $gamename map support for Sven Co-op =-"
 	echo ""
-	echo "Warning: around 50MB is used after installation."
+	echo "Warning: around 60MB is used after installation."
 
 	echo ""
 	echo "Installation may take a few minutes depending on"
@@ -87,7 +80,7 @@ messages () {
 
 	echo ""
 	echo "OS architecture: $osarch-bit"
-	echo "svencoop_addon support: $scaddon"
+	echo "Install directory: $instdir"
 	echo "ripent binary: $ripent"
 	echo ""
 	echo ""
@@ -98,9 +91,9 @@ validation() {
 
 	command -v unzip >/dev/null 2>&1  || { 
 		echo "Unzip not found."
-		echo "You can install by using 'sudo apt-get install unzip"
-		echo "on Ubuntu and Debian, and 'yum install unzip'"
-		echo "on RedHat or CentOS."
+		echo "You can install by using \"sudo apt-get install unzip\""
+		echo "for Ubuntu and Debian, and \"yum install unzip\""
+		echo "for RedHat or CentOS."
 		exit 1
 	}
 
@@ -151,10 +144,26 @@ validation() {
 # Copy map files from original installation
 copybs(){
 
+	# Create required folders if is a clean installation
+	if [ ! -d "../$instdir/gfx/env" ];
+	then
+		echo "Creating gfx/env/ directory..."
+		mkdir -p ../$instdir/gfx/env
+	fi
+	
+	if [ ! -d "../$instdir/maps" ];
+	then
+		echo "Creating maps directory..."
+		mkdir -p ../$instdir/maps
+	fi
+
 	for copy in $maplist; do
 	echo "Copying $copy..."
 	cp "$bsdir/maps/$copy.bsp" "$mpath/$copy.bsp"
 	done
+
+	echo "Copying sky textures..."
+	cp $bsdir/gfx/env/* ../$instdir/gfx/env/
 	echo ""
 
 }
@@ -196,4 +205,3 @@ echo "for help at http://forums.svencoop.com"
 
 exit 0
 
-# - R4to0 was here...

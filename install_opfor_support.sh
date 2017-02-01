@@ -1,18 +1,12 @@
 #!/bin/bash
 
-# install_opfor_support.sh for Sven Co-op 5.x
-# Last update: Oct 8 2016 14:50 UTC-3:00 by Rafael "R4to0" Maciel.
-
-# Tested on Ubuntu 14.04 and Debian 8 Jessie
-
-
 init() {
 
 	# If you don't want to install into svencoop_addon folder,
-	#set to false (not recommended)
-	scaddon=true
+	# change this to 'svencoop' (NOT RECOMMENDED)
+	instdir=svencoop_addon
 
-	# Do not touch below, unless you know what are doing.
+	# Don´t change anything below this line unless you know what are doing!!
 
 	# Game name
 	gamename="Opposing Force"
@@ -30,7 +24,7 @@ init() {
 	fi
 	
 	# Destination path for maps
-	if [ "$scaddon" == true ]
+	if [ "$instdir" == svencoop_addon ]
 	then
 		# svencoop_addon folder
 		mpath="../svencoop_addon/maps"
@@ -56,9 +50,9 @@ init() {
 messages () {
 
 	echo ""
-	echo "-= Valve $gamename map support for Sven Co-op 5.0 =-"
+	echo "-= Valve $gamename map support for Sven Co-op =-"
 	echo ""
-	echo "Warning: around 70MB is used after installation."
+	echo "Warning: around 80MB is used after installation."
 
 	echo ""
 	echo "Installation may take a few minutes depending on"
@@ -72,7 +66,7 @@ messages () {
 
 	echo ""
 	echo "OS architecture: $osarch-bit"
-	echo "svencoop_addon support: $scaddon"
+	echo "Install directory: $instdir"
 	echo "ripent binary: $ripent"
 	echo ""
 	echo ""
@@ -83,9 +77,9 @@ validation() {
 
 	command -v unzip >/dev/null 2>&1  || { 
 		echo "Unzip not found."
-		echo "You can install by using 'sudo apt-get install unzip"
-		echo "on Ubuntu and Debian, and 'yum install unzip'"
-		echo "on RedHat or CentOS."
+		echo "You can install by using \"sudo apt-get install unzip\""
+		echo "for Ubuntu and Debian, and \"yum install unzip\""
+		echo "for RedHat or CentOS."
 		exit 1
 	}
 
@@ -129,10 +123,26 @@ validation() {
 
 copyop4(){
 
+	# Create required folders if is a clean installation
+	if [ ! -d "../$instdir/gfx/env" ];
+	then
+		echo "Creating gfx/env/ directory..."
+		mkdir -p ../$instdir/gfx/env
+	fi
+	
+	if [ ! -d "../$instdir/maps" ];
+	then
+		echo "Creating maps directory..."
+		mkdir -p ../$instdir/maps
+	fi
+
 	for copy in $maplist; do
 	echo "Copying $copy..."
 	cp "$op4dir/maps/$copy.bsp" "$mpath/$copy.bsp"
 	done
+
+	echo "Copying sky textures..."
+	cp $op4dir/gfx/env/* ../$instdir/gfx/env/
 	echo ""
 
 }
@@ -158,7 +168,8 @@ cleanup(){
 
 	echo "Cleaning up..."
 	echo ""
-	rm $mpath/of*.ent
+	rm -f $mpath/of*a*.ent
+	rm -f $mpath/of*a*b.ent
 
 }
 
@@ -175,6 +186,3 @@ echo "All done! If you have any problems, ask"
 echo "for help at http://forums.svencoop.com"
 
 exit 0
-
-
-# - Radio: R4to0, out!...
