@@ -175,8 +175,8 @@ patching() {
 	unzip -o bshift_support.sven -d $mpath >/dev/null 2>&1
 	for target in $maplist; do
 	echo "Patching $target..."
-	./$ripent -import "$mpath/$target".bsp >/dev/null 2>&1
 	./$bsp "$mpath/$target".bsp >/dev/null 2>&1
+	./$ripent -import "$mpath/$target".bsp >/dev/null 2>&1
 	done
 	echo ""
 
@@ -204,4 +204,3 @@ echo "All done! If you have any problems, ask"
 echo "for help at http://forums.svencoop.com"
 
 exit 0
-
