@@ -112,6 +112,11 @@ validation() {
 	then
 		echo "Missing $bsp, cannot continue. Corrupted install?"
 		exit 1
+	else
+		if [[ ! -x "$bsp" ]]
+		then
+			chmod +x $bsp
+		fi
 	fi
 
 	# Check if Blue Shift game directory exists
