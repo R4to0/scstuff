@@ -2,9 +2,12 @@
 
 init() {
 
+	# We assume you're running this script from svencoop folder
+	# otherwise script will fail to find required tools and assets
+
 	# If you don't want to install into svencoop_addon folder,
-	# change this to 'svencoop' (NOT RECOMMENDED)
-	instdir=svencoop_addon
+	# change this to false
+	addondir=false
 
 	# Don´t change anything below this line unless you know what are doing!!
 
@@ -27,16 +30,16 @@ init() {
 	bsp=BShiftBSPConverter
 
 	# Destination path for maps
-	if [ "$instdir" == svencoop_addon ]
+	if [[ "$addondir" == true ]]
 	then
 		# svencoop_addon folder
-		mpath="../svencoop_addon/maps"
+		instdir=svencoop_addon
 	else
 		# svencoop standard folder (not recommended)
-		mpath="maps"
+		instdir=svencoop
 	fi
 
-	# Blue Shift installation path
+	# Blue Shift relative dir
 	bsdir="../../Half-Life/bshift"
 
 	# map list
@@ -129,7 +132,7 @@ validation() {
 	for mcheck in $maplist; do
 
 		# Extra check: let's make sure we have all map files before doing anything!
-		if [ -f "$mpath/$mcheck.bsp" ]
+		if [ -f "../$instdir/maps/$mcheck.bsp" ]
 		then
 			echo "Found $mcheck in maps folder!"
 		else
@@ -164,7 +167,7 @@ copybs(){
 
 	for copy in $maplist; do
 	echo "Copying $copy..."
-	cp "$bsdir/maps/$copy.bsp" "$mpath/$copy.bsp"
+	cp "$bsdir/maps/$copy.bsp" "../$instdir/maps/$copy.bsp"
 	done
 
 	echo "Copying sky textures..."
@@ -177,11 +180,11 @@ copybs(){
 patching() {
 
 	echo "Unzipping support files..."
-	unzip -o bshift_support.sven -d $mpath >/dev/null 2>&1
+	unzip -o bshift_support.sven -d ../$instdir/maps >/dev/null 2>&1
 	for target in $maplist; do
 	echo "Patching $target..."
-	./$bsp "$mpath/$target".bsp >/dev/null 2>&1
-	./$ripent -import "$mpath/$target".bsp >/dev/null 2>&1
+	./$bsp "../$instdir/maps/$target".bsp >/dev/null 2>&1
+	./$ripent -import "../$instdir/maps/$target".bsp >/dev/null 2>&1
 	done
 	echo ""
 
@@ -193,7 +196,7 @@ patching() {
 cleanup(){
 
 	echo "Cleaning up..."
-	rm $mpath/ba_*.ent
+	rm ../$instdir/maps/ba_*.ent
 	echo ""
 }
 
