@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# Safeguard to prevent running this script outside svencoop folder
+if [ "${PWD##*/}" != "svencoop" ];
+then
+	echo "Error: Make sure you're running this script from svencoop folder!"
+	exit 1
+fi
+
 init() {
 
 	# We assume you're running this script from svencoop folder
