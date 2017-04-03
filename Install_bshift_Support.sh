@@ -9,11 +9,8 @@ fi
 
 init() {
 
-	# We assume you're running this script from svencoop folder
-	# otherwise script will fail to find required tools and assets
-
-	# If you don't want to install into svencoop_addon folder,
-	# change this to false
+	# Install location:
+	# true: svencoop_addon, false: svencoop
 	addondir=false
 
 	# Don´t change anything below this line unless you know what are doing!!
@@ -42,7 +39,7 @@ init() {
 		# svencoop_addon folder
 		instdir=svencoop_addon
 	else
-		# svencoop standard folder (not recommended)
+		# svencoop standard folder
 		instdir=svencoop
 	fi
 

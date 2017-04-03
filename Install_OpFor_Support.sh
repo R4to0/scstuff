@@ -9,9 +9,9 @@ fi
 
 init() {
 
-	# If you don't want to install into svencoop_addon folder,
-	# change this to 'svencoop' (NOT RECOMMENDED)
-	instdir=svencoop_addon
+	# Install location:
+	# true: svencoop_addon, false: svencoop
+	addondir=false
 
 	# Don´t change anything below this line unless you know what are doing!!
 
@@ -31,13 +31,13 @@ init() {
 	fi
 	
 	# Destination path for maps
-	if [ "$instdir" == svencoop_addon ]
+	if [[ "$addondir" == true ]]
 	then
 		# svencoop_addon folder
-		mpath="../svencoop_addon/maps"
+		instdir=svencoop_addon
 	else
-		# svencoop standard folder (not recommended)
-		mpath="maps"
+		# svencoop standard folder
+		instdir=svencoop
 	fi
 
 	# Path of Opposing Force installation
@@ -111,13 +111,13 @@ validation() {
 	for mcheck in $maplist; do
 
 		# Extra check: let's make sure we have all map files!
-		if [ -f "$mpath/$mcheck.bsp" ]
+		if [ -f "../$instdir/maps/$mcheck.bsp" ]
 		then
 			echo "Found $mcheck in maps folder!"
 		else
 			# Show message about missing file to user and exit script.
 			echo ""
-			echo "Oops! Map file $mcheck.bsp is missing. Please check if you"
+			echo "Oops! Map file $mcheck.bsp is missing. Please make sure you"
 			echo "have a working $gamename installation and/or"
 			echo "all map files in maps folder before running this script!"
 			echo ""
@@ -128,6 +128,7 @@ validation() {
 
 }
 
+# Copy map files from original installation
 copyop4(){
 
 	# Create required folders if is a clean installation
@@ -145,7 +146,7 @@ copyop4(){
 
 	for copy in $maplist; do
 	echo "Copying $copy..."
-	cp "$op4dir/maps/$copy.bsp" "$mpath/$copy.bsp"
+	cp "$op4dir/maps/$copy.bsp" "../$instdir/maps/$copy.bsp"
 	done
 
 	echo "Copying sky textures..."
@@ -157,7 +158,7 @@ copyop4(){
 unzips(){
 
 	echo "Unzipping support files..."
-	unzip -o opfor_support.sven -d $mpath >/dev/null 2>&1
+	unzip -o opfor_support.sven -d ../$instdir/maps >/dev/null 2>&1
 
 }
 
@@ -165,7 +166,7 @@ enting() {
 
 	for ent in $maplist; do
 	echo "Patching $ent..."
-	./$ripent -import "$mpath/$ent".bsp >/dev/null 2>&1
+	./$ripent -import "../$instdir/maps/$ent".bsp >/dev/null 2>&1
 	done
 	echo ""
 
@@ -175,8 +176,8 @@ cleanup(){
 
 	echo "Cleaning up..."
 	echo ""
-	rm -f $mpath/of*a*.ent
-	rm -f $mpath/of*a*b.ent
+	rm -f ../$instdir/maps/of*a*.ent
+	rm -f ../$instdir/maps/of*a*b.ent
 
 }
 
