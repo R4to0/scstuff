@@ -40,7 +40,7 @@ init() {
 		instdir=svencoop
 	fi
 
-	# Path of Opposing Force installation
+	# Opposing Force relative dir
 	op4dir="../../Half-Life/gearbox"
 
 	# map list
@@ -157,16 +157,18 @@ copyop4(){
 
 unzips(){
 
-	echo "Unzipping support files..."
-	unzip -o opfor_support.sven -d ../$instdir/maps >/dev/null 2>&1
+
 
 }
 
-enting() {
+# Importing custom entities
+patching() {
 
-	for ent in $maplist; do
-	echo "Patching $ent..."
-	./$ripent -import "../$instdir/maps/$ent".bsp >/dev/null 2>&1
+	echo "Unzipping support files..."
+	unzip -o opfor_support.sven -d ../$instdir/maps >/dev/null 2>&1
+	for target in $maplist; do
+	echo "Patching $target..."
+	./$ripent -import "../$instdir/maps/$target".bsp >/dev/null 2>&1
 	done
 	echo ""
 
@@ -176,16 +178,14 @@ cleanup(){
 
 	echo "Cleaning up..."
 	echo ""
-	rm -f ../$instdir/maps/of*a*.ent
-	rm -f ../$instdir/maps/of*a*b.ent
+	rm ../$instdir/maps/of*a*.ent
 
 }
 
 init
 messages
 validation
-unzips
-enting
+patching
 cleanup
 
 # Das ende
