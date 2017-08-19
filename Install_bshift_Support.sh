@@ -1,11 +1,9 @@
 #!/bin/bash
 
-# Safeguard to prevent running this script outside svencoop folder
-if [ "${PWD##*/}" != "svencoop" ];
-then
-	echo "Error: Make sure you're running this script from svencoop folder!"
-	exit 1
-fi
+# Sven Co-op support script for Valve games.
+
+# Discord channel: https://discord.gg/y87qr6Y
+# Forums: https://forums.svencoop.com/
 
 init() {
 
@@ -14,6 +12,22 @@ init() {
 	addondir=false
 
 	# Don´t change anything below this line unless you know what are doing!!
+
+	# Set root for the script.
+	script_root="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+	# Safeguard¹: CD to the correct dir, no matter from where the script is ran.
+	if [ "${PWD##*/}" != "svencoop" ];
+	then
+		cd "$script_root"
+	fi
+
+	# Safeguard²: prevent running this script outside svencoop folder if the above fails.
+	if [ "${PWD##*/}" != "svencoop" ];
+	then
+		echo "Error: Script running outside \"svencoop\" folder! Exiting..."
+		exit 1
+	fi
 
 	# Game name
 	gamename="Blue Shift"
@@ -71,7 +85,7 @@ init() {
 messages () {
 
 	echo ""
-	echo "-= Valve $gamename map support for Sven Co-op =-"
+	echo "-= Half-Life: $gamename map support for Sven Co-op =-"
 	echo ""
 	echo "Warning: around 60MB is used after installation."
 
@@ -79,6 +93,11 @@ messages () {
 	echo "Installation may take a few minutes depending on"
 	echo "your system performance. Please be patient."
 	echo ""
+
+	echo "----------------------------------------------------------------------------"
+	echo "IMPORTANT: To install $gamename support, you must own 'Half-Life:"
+	echo "$gamename' and have it fully downloaded and installed on Steam!"
+	echo "----------------------------------------------------------------------------"
 	echo ""
 	
 	# It's time to choose! - GMan
@@ -213,6 +232,6 @@ cleanup
 
 # We made it Mr Calhoun, we made it!
 echo "All done! If you have any problems, ask"
-echo "for help at http://forums.svencoop.com"
+echo "for help at https://forums.svencoop.com"
 
 exit 0
